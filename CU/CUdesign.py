@@ -1,4 +1,3 @@
-
 from Main import memory
 from datapath.ALU import ALU
 from datapath.H import H
@@ -6,7 +5,6 @@ from datapath.LV import LV
 from datapath.MAR import MAR
 from datapath.MDR import MDR
 from datapath.OPC import OPC
-
 from datapath.PC import PC
 from datapath.MBR import MBR
 from datapath.SP import SP
@@ -25,7 +23,7 @@ def fetch():
 
 
 def wr():
-    memory[MAR]=MDR.data
+    memory[MAR] = MDR.data
 
 
 def bipush(T):
