@@ -1,4 +1,4 @@
-from Main import memory
+from Memory import Memory
 from datapath.ALU import ALU
 from datapath.H import H
 from datapath.LV import LV
@@ -18,12 +18,12 @@ def fetch():
 
     # sys pause
 
-    MBR.load(memory[PC])
+    MBR.load(Memory.read(PC.data))
     PC.load(ALU.out)
 
 
 def wr():
-    memory[MAR] = MDR.data
+    Memory.word_write(MDR.data, MAR.data)
 
 
 def bipush(T):
@@ -47,7 +47,6 @@ def bipush(T):
     wr()
 
 
-
 def GOTO(T):
     # ld of opc should be enabled and pc is on alu bus
     ALU.controller = "110110"
@@ -63,12 +62,15 @@ def GOTO(T):
 
     H.load(ALU.out)
 
+
 def LADD(T):
     ALU.controller = "010100"
     ALU.b_update(LV.data)
 
     # sys
     H.load(ALU.out)
+    # incomplete
+
 
 def IFEQ(T):
     pass
@@ -99,29 +101,24 @@ def ISUB(T):
 
 
 def NOPE(T):
+
     pass
 
 
 class CU:
-
-
-
     def clocked(T):
-
-
-        if (T==0):
-             fetch()
+        if T == 0:
+            fetch()
         else:
-                      N={0x10: bipush(T),
-                       0xA7: GOTO(T),
-                       0x60: LADD(T),
-                       0x99: IFEQ(T),
-                       0x9B: IFLT(T),
-                       0x9F: IF_ICMPEQ(T),
-                       0x84: IINC(T),
-                       0x15: ILOAD(T),
-                       0x36: ISTORE(T),
-                       0x64: ISUB(T),
-                       0x00: NOPE(T),
-                       }[MBR.data]
-
+            N = {0x10: bipush(T),
+                 0xA7: GOTO(T),
+                 0x60: LADD(T),
+                 0x99: IFEQ(T),
+                 0x9B: IFLT(T),
+                 0x9F: IF_ICMPEQ(T),
+                 0x84: IINC(T),
+                 0x15: ILOAD(T),
+                 0x36: ISTORE(T),
+                 0x64: ISUB(T),
+                 0x00: NOPE(T),
+                 }[MBR.data]

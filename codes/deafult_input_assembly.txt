@@ -1,0 +1,13 @@
+.text
+bipush 16
+.end_text
+.consts
+char 4
+panj 5
+shish 6
+.end_consts
+.vars
+iek 1
+do 2
+se 3
+.end_vars
