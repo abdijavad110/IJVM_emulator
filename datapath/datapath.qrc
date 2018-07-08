@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>datapath_50p.png</file>
+  </qresource>
+  <qresource prefix="arrow">
+    <file>arrow_green.png</file>
+  </qresource>
+  <qresource prefix="tab">
+    <file>Edit_tab.jpg</file>
+    <file>Execute_tab.jpg</file>
+  </qresource>
+</RCC>
