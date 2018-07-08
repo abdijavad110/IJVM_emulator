@@ -28,7 +28,7 @@ instruction_operands = {"bipush": 1,
                         "nop": 0}
 
 # memory:
-memory_size = 2 ** 32
+memory_size = 2 ** 16
 
 # registers default value
 PC_default = 0
