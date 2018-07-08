@@ -3,7 +3,8 @@ class ALU:
     A = 0
     B = 0
     out = 0
-
+    Z=0
+    N=0
     @staticmethod
     def update():
         ALU.out = {
@@ -27,7 +28,8 @@ class ALU:
         }[ALU.controller]
         if ALU.out >= 4294967296:
             ALU.out = ALU.out & 4294967295
-
+        ALU.Z= 1 if ALU.out==0 else 0
+        ALU.N= 1 if ALU.out<0 else 0
     @staticmethod
     def a_update(a):
         ALU.A = a
