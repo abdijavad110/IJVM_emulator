@@ -43,12 +43,14 @@ class CU:
 
         # sys pause
         CU.ui.signals_stop()
-        CU.ui.mbr_ld_start(Memory.read(PC.data))
-        CU.ui.pc_ld_start(ALU.out)
+        CU.ui.mbr_ld_start()
+        CU.ui.pc_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
+        CU.ui.mbr_ld_update(Memory.read(PC.data))
+        CU.ui.pc_ld_update(ALU.out)
 
         MBR.load(Memory.read(PC.data))
         PC.load(ALU.out)
@@ -75,13 +77,14 @@ class CU:
         # sys
         CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.sp__ld_start(ALU.out)
-        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start()
+        CU.ui.mar_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.sp__ld_update(ALU.out)
+        CU.ui.mar_ld_update(ALU.out)
         SP.load(ALU.out)
         MAR.load(ALU.out)
         CU.fetch()
@@ -92,12 +95,14 @@ class CU:
         ALU.b_update(MBR.data)
         # sys
         CU.ui.signals_stop()
-        CU.ui.mdr_ld_start(ALU.out)
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.mdr_ld_start()
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
+        CU.ui.mdr_ld_update(ALU.out)
+        CU.ui.tos_ld_update(ALU.out)
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
@@ -110,12 +115,12 @@ class CU:
 
         # sys
         CU.ui.signals_stop()
-        CU.ui.opc_ld_start(ALU.out)
-        CU.ui.mbr_out1_start()
+        CU.ui.opc_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
+        CU.ui.opc_ld_update(ALU.out)
 
         OPC.load(ALU.out)
         CU.fetch()
@@ -126,39 +131,43 @@ class CU:
 
         # sys
         CU.ui.signals_stop()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
+        CU.ui.mbr_out1_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+        CU.ui.h_ld_update(ALU.out)
+        H.load(ALU.out)
+        ALU.controller = "011100"
+        ALU.b_update(MBR.data)
+        ALU.a_update(H.data)
+        #     ld of H should be enabled
+
+        # sys
+        CU.ui.signals_stop()
+        CU.ui.h_ld_start()
         CU.ui.mbr_out2_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
-        H.load(ALU.out)
-        ALU.controller = "011100"
-        ALU.b_update(MBRU.data)     # todo in mbru chie??
-        ALU.a_update(H.data)
-        #     ld of H should be enabled
-
-        # sys
-        CU.ui.h_ld_start(ALU.out)
-        CU.ui.opc_out_start()
-        CU.flag = True
-        while CU.flag:
-            continue
-        #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         ALU.controller = "111100"
         ALU.b_update(OPC.data)
         ALU.a_update(H.data)
 
         #     sys
-        CU.ui.pc_ld_start(ALU.out)
+        CU.ui.signals_stop()
+        CU.ui.pc_ld_start()
+        CU.ui.opc_out_start()
+
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.pc_ld_update(ALU.out)
         PC.load(ALU.out)
 
     @staticmethod
@@ -168,13 +177,16 @@ class CU:
         ALU.b_update(SP.data)
 
         #     sys
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.signals_stop()
+        CU.ui.mar_ld_start()
+        CU.ui.sp__ld_start()
         CU.ui.sp_out_start()
         CU.flag = True
         while CU.flag:
             continue
         #
+        CU.ui.mar_out_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
 
         MAR.load(ALU.out)
         SP.load(ALU.out)
@@ -183,13 +195,14 @@ class CU:
         ALU.b_update(TOS.data)
 
         #   sys
+        CU.ui.signals_stop()
         CU.ui.tos_out_start()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         # enable ld of tos and MDR
         ALU.controller = "111100"
@@ -197,14 +210,14 @@ class CU:
         ALU.a_update(H.data)
 
         #   sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.tos_ld_update(ALU.out)
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
@@ -216,12 +229,14 @@ class CU:
         ALU.b_update(SP.data)
 
         #     sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
+        CU.ui.sp_ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         # rd of memory is enabled
@@ -233,32 +248,35 @@ class CU:
         ALU.b_update(TOS.data)
 
         #   sys
+        CU.ui.signals_stop()
         CU.ui.tos_out_start()
-        CU.ui.opc_ld_start(ALU.out)
+        CU.ui.opc_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.opc_ld_update(ALU.out)
         OPC.load(ALU.out)
         #   enable ld of tos and MDR is on bus
         ALU.controller = "010100"
         ALU.b_update(MDR.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
         #     opc is on bus to check if it is zero
         ALU.controller = "010100"
         ALU.b_update(OPC.data)
 
         #     sys
+        CU.ui.signals_stop()
         CU.ui.opc_out_start()
         CU.flag = True
         while CU.flag:
@@ -271,13 +289,14 @@ class CU:
             ALU.b_update(PC.data)
 
             #     sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.opc_ld_start(ALU.out)
+            CU.ui.opc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
-
+            CU.ui.opc_ld_update(ALU.out)
             OPC.load(ALU.out)
             CU.GOTO()
 
@@ -287,13 +306,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys pause
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.pc_ld_start(ALU.out)
+            CU.ui.pc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
-
+            CU.ui.pc_ld_update(ALU.out)
             PC.load(ALU.out)
 
             # ld pc enable to be incremented
@@ -301,12 +321,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys pause
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.pc_ld_start(ALU.out)
+            CU.ui.pc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
+            CU.ui.pc_ld_update(ALU.out)
 
             PC.load(ALU.out)
 
@@ -317,14 +339,16 @@ class CU:
         ALU.b_update(SP.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start()
+        CU.ui.sp__ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         # rd of memory is enabled
@@ -335,32 +359,35 @@ class CU:
         ALU.b_update(TOS.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.tos_out_start()
-        CU.ui.opc_ld_start(ALU.out)
+        CU.ui.opc_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.opc_ld_update(ALU.out)
         OPC.load(ALU.out)
         #   enable ld of tos and MDR is on bus
         ALU.controller = "010100"
         ALU.b_update(MDR.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
         #     opc is on bus to check if it is zero
         ALU.controller = "010100"
         ALU.b_update(OPC.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.opc_out_start()
         CU.flag = True
         while CU.flag:
@@ -374,13 +401,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.opc_ld_start(ALU.out)
+            CU.ui.opc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
-
+            CU.ui.opc_ld_update(ALU.out)
             OPC.load(ALU.out)
             CU.GOTO()
 
@@ -390,13 +418,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.pc_ld_start(ALU.out)
+            CU.ui.pc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
-
+            CU.ui.pc_ld_update(ALU.out)
             PC.load(ALU.out)
 
             # ld pc enable to be incremented
@@ -404,13 +433,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.pc_ld_start(ALU.out)
+            CU.ui.pc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
-
+            CU.ui.pc_ld_update(ALU.out)
             PC.load(ALU.out)
 
     @staticmethod
@@ -420,14 +450,16 @@ class CU:
         ALU.b_update(SP.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start()
+        CU.ui.sp__ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         # rd of memory is enabled
@@ -437,27 +469,32 @@ class CU:
         ALU.b_update(SP.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.sp__ld_start(ALU.out)
-        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start()
+        CU.ui.mar_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.sp__ld_update(ALU.out)
+        CU.ui.mar_ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         #     mdr is on bus and ld of H is enabled and rd of memory is enabled
         ALU.controller = "010100"
-        ALU.b_update(H.data)
+        ALU.b_update(MDR.data)
 
         # sys
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.signals_stop()
+        CU.ui.h_ld_start()
+        CU.ui.mdr_out_start()
+
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         # rd of memory is enabled
         CU.rd()
@@ -467,26 +504,28 @@ class CU:
         ALU.b_update(TOS.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.tos_out_start()
-        CU.ui.opc_ld_start(ALU.out)
+        CU.ui.opc_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.opc_ld_update(ALU.out)
         OPC.load(ALU.out)
         #   enable ld of tos and MDR is on bus
         ALU.controller = "010100"
         ALU.b_update(MDR.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
         #     opc is on bus and alu is wants to have opc - H in the out
         ALU.controller = "111111"
@@ -494,7 +533,9 @@ class CU:
         ALU.a_update(H.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.opc_out_start()
+        CU.ui.h_out_start()
         CU.flag = True
         while CU.flag:
             continue
@@ -506,13 +547,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.opc_ld_start(ALU.out)
+            CU.ui.opc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
-
+            CU.ui.opc_ld_update(ALU.out)
             OPC.load(ALU.out)
             CU.GOTO()
 
@@ -522,12 +564,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.pc_ld_start(ALU.out)
+            CU.ui.pc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
+            CU.ui.pc_ld_update(ALU.out)
 
             PC.load(ALU.out)
 
@@ -536,12 +580,14 @@ class CU:
             ALU.b_update(PC.data)
 
             # sys
+            CU.ui.signals_stop()
             CU.ui.pc_out_start()
-            CU.ui.pc_ld_start(ALU.out)
+            CU.ui.pc_ld_start()
             CU.flag = True
             while CU.flag:
                 continue
             #
+            CU.ui.pc_ld_update(ALU.out)
 
             PC.load(ALU.out)
 
@@ -554,13 +600,14 @@ class CU:
         ALU.b_update(LV.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.lv_out_start()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         #     enable ld of MAR and MBRU is on bus
         ALU.controller = "111100"
@@ -568,28 +615,29 @@ class CU:
         ALU.a_update(H.data)
 
         # sys
-        CU.ui.mbr_out1_start()
-        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.signals_stop()
+        CU.ui.mbr_out2_start()
+        CU.ui.mar_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
         MAR.load(ALU.out)
         CU.rd()
         CU.fetch()
         #     enable ld of H and MDR is on bus
         ALU.controller = "010100"
         ALU.b_update(MDR.data)
-
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
 
         #     enable ld of MDR and MBR is on bus
@@ -598,13 +646,14 @@ class CU:
         ALU.a_update(H.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mbr_out1_start()
-        CU.ui.mdr_ld_start(ALU.out)
+        CU.ui.mdr_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mdr_ld_update(ALU.out)
         MDR.load(ALU.out)
         CU.wr()
 
@@ -617,13 +666,14 @@ class CU:
         ALU.b_update(LV.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.lv_out_start()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         #     enable ld of MAR and MBRU is on bus
         ALU.controller = "111100"
@@ -631,13 +681,14 @@ class CU:
         ALU.a_update(H.data)
 
         # sys
-        CU.ui.mbr_out1_start()
-        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.signals_stop()
+        CU.ui.mbr_out2_start()
+        CU.ui.mar_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
         MAR.load(ALU.out)
         # ed of memory
         CU.rd()
@@ -647,14 +698,16 @@ class CU:
         ALU.b_update(SP.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start()
+        CU.ui.sp__ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         #     wr of memory
@@ -664,13 +717,14 @@ class CU:
         ALU.b_update(MDR.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
 
     @staticmethod
@@ -682,13 +736,14 @@ class CU:
         ALU.b_update(LV.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.lv_out_start()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         #     enable ld of MAR and MBRU is on bus
         ALU.controller = "111100"
@@ -696,26 +751,28 @@ class CU:
         ALU.a_update(H.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mbr_out1_start()
-        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.mar_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
         MAR.load(ALU.out)
         #     enable ld of MDR and Tos is on bus
         ALU.controller = "010100"
         ALU.b_update(TOS.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.tos_out_start()
-        CU.ui.mdr_ld_start(ALU.out)
+        CU.ui.mdr_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mdr_ld_update(ALU.out)
         MDR.load(ALU.out)
         CU.wr()
 
@@ -724,14 +781,16 @@ class CU:
         ALU.b_update(SP.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start()
+        CU.ui.sp__ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         #     rd of memory
@@ -742,13 +801,14 @@ class CU:
         ALU.b_update(MDR.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
 
     @staticmethod
@@ -758,14 +818,16 @@ class CU:
         ALU.b_update(SP.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.sp_out_start()
-        CU.ui.mar_ld_start(ALU.out)
-        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start()
+        CU.ui.sp__ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mar_ld_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         #     rd of memory
@@ -776,13 +838,14 @@ class CU:
         ALU.b_update(TOS.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.tos_out_start()
-        CU.ui.h_ld_start(ALU.out)
+        CU.ui.h_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.h_ld_update(ALU.out)
         H.load(ALU.out)
         # enable ld of tos and MDR
         ALU.controller = "111111"
@@ -790,14 +853,16 @@ class CU:
         ALU.a_update(H.data)
 
         # sys
+        CU.ui.signals_stop()
         CU.ui.mdr_out_start()
-        CU.ui.mdr_ld_start(ALU.out)
-        CU.ui.tos_ld_start(ALU.out)
+        CU.ui.mdr_ld_start()
+        CU.ui.tos_ld_start()
         CU.flag = True
         while CU.flag:
             continue
         #
-
+        CU.ui.mdr_ld_update(ALU.out)
+        CU.ui.tos_ld_update(ALU.out)
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
