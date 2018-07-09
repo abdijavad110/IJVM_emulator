@@ -814,26 +814,34 @@ class Ui_MainWindow(object):
         assemble_btn_clicked()
 
     def mar_ld_start(self, value):
-        self.mar_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.mar_ld.show()
 
     def mdr_ld_start(self, value):
-        self.mdr_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.mdr_ld.show()
+
+    def mar_ld_update(self, value):
+        self.mar_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
+
+    def mdr_ld_update(self, value):
+        self.mdr_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def mdr_out_start(self):
         self.mdr_out.show()
 
     def pc_ld_start(self, value):
-        self.pc_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.pc_ld.show()
+
+    def pc_ld_update(self, value):
+        self.pc_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def pc_out_start(self):
         self.pc_out.show()
 
     def mbr_ld_start(self, value):
-        self.mbr_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.mbr_ld.show()
+
+    def mbr_ld_update(self, value):
+        self.mbr_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def mbr_out1_start(self):
         self.mbr_out1.show()
@@ -842,43 +850,55 @@ class Ui_MainWindow(object):
         self.mbr_out2.show()
 
     def sp__ld_start(self, value):
-        self.sp_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.sp_ld.show()
+
+    def sp__ld_update(self, value):
+        self.sp_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def sp_out_start(self):
         self.sp_out.show()
 
     def cpp_ld_start(self, value):
-        self.cpp_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.cpp_ld.show()
+
+    def cpp_ld_update(self, value):
+        self.cpp_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def cpp_out_start(self):
         self.cpp_out.show()
 
     def lv_ld_start(self, value):
-        self.lv_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.lv_ld.show()
+
+    def lv_ld_update(self, value):
+        self.lv_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def lv_out_start(self):
         self.lv_out.show()
 
     def tos_ld_start(self, value):
-        self.tos_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.tos_ld.show()
+
+    def tos_ld_update(self, value):
+        self.tos_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def tos_out_start(self):
         self.tos_out.show()
 
     def opc_ld_start(self, value):
-        self.opc_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.opc_ld.show()
+
+    def opc_ld_update(self, value):
+        self.opc_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def opc_out_start(self):
         self.opc_out.show()
 
     def h_ld_start(self, value):
-        self.h_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
         self.H_ld.show()
+
+    def h_ld_update(self, value):
+        self.h_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
 
     def signals_stop(self):
         self.mar_ld.hide()
