@@ -9,414 +9,799 @@ from datapath.PC import PC
 from datapath.MBR import MBR
 from datapath.SP import SP
 from datapath.TOS import TOS
-
-
+from graphics.UIs.ui import Ui_MainWindow
 
 
 class CU:
-    T=0
+    T = 0
+    ui = Ui_MainWindow()
+    flag = False
 
-
-    def clocked(self):
-        if T == 0:
-            fetch()
+    @staticmethod
+    def clocked():
+        if CU.T == 0:
+            CU.fetch()
         else:
-            N = {0x10: bipush(T),
-                 0xA7: GOTO(T),
-                 0x60: LADD(T),
-                 0x99: IFEQ(T),
-                 0x9B: IFLT(T),
-                 0x9F: IF_ICMPEQ(T),
-                 0x84: IINC(T),
-                 0x15: ILOAD(T),
-                 0x36: ISTORE(T),
-                 0x64: ISUB(T),
-                 0x00: NOPE(T),
+            N = {0x10: CU.bipush(),
+                 0xA7: CU.GOTO(),
+                 0x60: CU.LADD(),
+                 0x99: CU.IFEQ(),
+                 0x9B: CU.IFLT(),
+                 0x9F: CU.IF_ICMPEQ(),
+                 0x84: CU.IINC(),
+                 0x15: CU.ILOAD(),
+                 0x36: CU.ISTORE(),
+                 0x64: CU.ISUB(),
+                 0x00: CU.NOPE(),
                  }[MBR.data]
 
-def fetch():
-    # enable pc  and MBR ld and rd of memory and increment of ALU
-    ALU.controller = "110101"
-    ALU.b_update(PC.data)
+    @staticmethod
+    def fetch():
 
-    # sys pause
+        ALU.controller = "110101"
+        ALU.b_update(PC.data)
 
-    MBR.load(Memory.read(PC.data))
-    PC.load(ALU.out)
-    T +=1
+        # sys pause
+        CU.ui.signals_stop()
+        CU.ui.mbr_ld_start(Memory.read(PC.data))
+        CU.ui.pc_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-def rd():
-     MDR.load(Memory.read(MAR.data))
+        MBR.load(Memory.read(PC.data))
+        PC.load(ALU.out)
+        CU.T += 1
 
-def wr():
-    Memory.word_write(MDR.data, MAR.data)
+    @staticmethod
+    def rd():
+        #
+        CU.ui.mdr_ld_start(Memory.read(MAR.data))
+        #
+        MDR.load(Memory.read(MAR.data))
 
-def bipush():
-    # sp on bus to alu and enable sp ld
-    ALU.controller = "110101"
-    ALU.b_update(SP.data)
+    @staticmethod
+    def wr():
+        Memory.word_write(MDR.data, MAR.data)
 
-    # sys
+    @staticmethod
+    def bipush():
+        # sp on bus to alu and enable sp ld
 
-    SP.load(ALU.out)
-    MAR.load(ALU.out)
-    fetch()
-    # sys
-    # b should be out of alu
+        ALU.controller = "110101"
+        ALU.b_update(SP.data)
 
-    ALU.controller = "010100"
-    ALU.b_update(MBR.data)
-    # sys
-    MDR.load(ALU.out)
-    TOS.load(ALU.out)
-    wr()
+        # sys
+        CU.ui.signals_stop()
+        CU.ui.sp_out_start()
+        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-def GOTO(self):
-    # ld of opc should be enabled and pc is on alu bus
-    ALU.controller = "110110"
-    ALU.b_update(PC.data)
+        SP.load(ALU.out)
+        MAR.load(ALU.out)
+        CU.fetch()
+        # sys
+        # b should be out of alu
 
-    # sys
-    OPC.load(ALU.out)
-    fetch()
-    #     ld of H should be enabled
-    ALU.controller = "011111"
-    ALU.b_update(MBR.data)
-    fetch()
-    # sys
+        ALU.controller = "010100"
+        ALU.b_update(MBR.data)
+        # sys
+        CU.ui.signals_stop()
+        CU.ui.mdr_ld_start(ALU.out)
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+        MDR.load(ALU.out)
+        TOS.load(ALU.out)
+        CU.wr()
 
-    H.load(ALU.out)
-    ALU.controller = "011100"
-    ALU.b_update(MBRU.data)
-    ALU.a_update(H.data)
-    #     ld of H should be enabled
-    # sys
-    H.load(ALU.out)
-    ALU.controller = "111100"
-    ALU.b_update(OPC.data)
-    ALU.a_update(H.data)
-    #     sys
-    PC.load(ALU.out)
-
-
-def LADD(self):
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-#     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-#     enable ld of H ,tos is on bus
-    ALU.controller = "010100"
-    ALU.b_update(TOS.data)
-#   sys
-
-    H.load(ALU.out)
-    # enable ld of tos and MDR
-    ALU.controller = "111100"
-    ALU.b_update(MDR.data)
-    ALU.a_update(H.data)
-#   sys
-    MDR.load(ALU.out)
-    TOS.load(ALU.out)
-    wr()
-
-
-
-
-
-
-def IFEQ(self):
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-    # rd of memory is enabled
-
-    rd()
-#     enable ld of opc...tos is on bus
-
-    ALU.controller = "010100"
-    ALU.b_update(TOS.data)
-
-#   sys
-    OPC.load(ALU.out)
-#   enable ld of tos and MDR is on bus
-    ALU.controller = "010100"
-    ALU.b_update(MDR.data)
-# sys
-    TOS.load(ALU.out)
-#     opc is on bus to check if it is zero
-    ALU.controller = "010100"
-    ALU.b_update(OPC.data)
-
-    if ALU.Z:
-        # enable ld OPC
+    @staticmethod
+    def GOTO():
+        # ld of opc should be enabled and pc is on alu bus
         ALU.controller = "110110"
         ALU.b_update(PC.data)
-         #     sys
+
+        # sys
+        CU.ui.signals_stop()
+        CU.ui.opc_ld_start(ALU.out)
+        CU.ui.mbr_out1_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
         OPC.load(ALU.out)
-        GOTO()
+        CU.fetch()
+        #     ld of H should be enabled
+        ALU.controller = "011111"
+        ALU.b_update(MBR.data)
+        CU.fetch()
 
-    else:
-        # ld pc enable to be incremented
-        ALU.controller = "110101"
-        ALU.b_update(PC.data)
+        # sys
+        CU.ui.signals_stop()
+        CU.ui.h_ld_start(ALU.out)
+        CU.ui.mbr_out2_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-        # sys pause
-        PC.load(ALU.out)
+        H.load(ALU.out)
+        ALU.controller = "011100"
+        ALU.b_update(MBRU.data)     # todo in mbru chie??
+        ALU.a_update(H.data)
+        #     ld of H should be enabled
 
-        # ld pc enable to be incremented
-        ALU.controller = "110101"
-        ALU.b_update(PC.data)
+        # sys
+        CU.ui.h_ld_start(ALU.out)
+        CU.ui.opc_out_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-        # sys pause
-        PC.load(ALU.out)
+        H.load(ALU.out)
+        ALU.controller = "111100"
+        ALU.b_update(OPC.data)
+        ALU.a_update(H.data)
 
-
-
-def IFLT(self):
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-    # rd of memory is enabled
-    rd()
-    #     enable ld of opc...tos is on bus
-
-    ALU.controller = "010100"
-    ALU.b_update(TOS.data)
-
-    #   sys
-    OPC.load(ALU.out)
-    #   enable ld of tos and MDR is on bus
-    ALU.controller = "010100"
-    ALU.b_update(MDR.data)
-    # sys
-    TOS.load(ALU.out)
-    #     opc is on bus to check if it is zero
-    ALU.controller = "010100"
-    ALU.b_update(OPC.data)
-
-    if ALU.N:
-        # enable ld OPC
-        ALU.controller = "110110"
-        ALU.b_update(PC.data)
         #     sys
-        OPC.load(ALU.out)
-        GOTO()
+        CU.ui.pc_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-    else:
-        # ld pc enable to be incremented
-        ALU.controller = "110101"
-        ALU.b_update(PC.data)
-
-        # sys pause
         PC.load(ALU.out)
 
-        # ld pc enable to be incremented
-        ALU.controller = "110101"
-        ALU.b_update(PC.data)
-
-        # sys pause
-        PC.load(ALU.out)
-
-
-def IF_ICMPEQ():
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-    # rd of memory is enabled
-    rd()
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-#     mdr is on bus and ld of H is enabled and rd of memory is enabled
-    ALU.controller = "010100"
-    ALU.b_update(H.data)
-#     sys
-    H.load(ALU.out)
-    # rd of memory is enabled
-    rd()
-    #     enable ld of opc...tos is on bus
-
-    ALU.controller = "010100"
-    ALU.b_update(TOS.data)
-
-    #   sys
-    OPC.load(ALU.out)
-    #   enable ld of tos and MDR is on bus
-    ALU.controller = "010100"
-    ALU.b_update(MDR.data)
-    # sys
-    TOS.load(ALU.out)
-#     opc is on bus and alu is wants to have opc - H in the out
-    ALU.controller = "111111"
-    ALU.b_update(OPC.data)
-    ALU.a_update(H.data)
-    if ALU.Z:
-        # enable ld OPC
+    @staticmethod
+    def LADD():
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
         ALU.controller = "110110"
-        ALU.b_update(PC.data)
-         #     sys
+        ALU.b_update(SP.data)
+
+        #     sys
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.sp_out_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        #     enable ld of H ,tos is on bus
+        ALU.controller = "010100"
+        ALU.b_update(TOS.data)
+
+        #   sys
+        CU.ui.tos_out_start()
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        H.load(ALU.out)
+        # enable ld of tos and MDR
+        ALU.controller = "111100"
+        ALU.b_update(MDR.data)
+        ALU.a_update(H.data)
+
+        #   sys
+        CU.ui.mdr_out_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MDR.load(ALU.out)
+        TOS.load(ALU.out)
+        CU.wr()
+
+    @staticmethod
+    def IFEQ():
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
+        ALU.controller = "110110"
+        ALU.b_update(SP.data)
+
+        #     sys
+        CU.ui.sp_out_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        # rd of memory is enabled
+
+        CU.rd()
+        #     enable ld of opc...tos is on bus
+
+        ALU.controller = "010100"
+        ALU.b_update(TOS.data)
+
+        #   sys
+        CU.ui.tos_out_start()
+        CU.ui.opc_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
         OPC.load(ALU.out)
-        GOTO()
+        #   enable ld of tos and MDR is on bus
+        ALU.controller = "010100"
+        ALU.b_update(MDR.data)
 
-    else:
-        # ld pc enable to be incremented
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        TOS.load(ALU.out)
+        #     opc is on bus to check if it is zero
+        ALU.controller = "010100"
+        ALU.b_update(OPC.data)
+
+        #     sys
+        CU.ui.opc_out_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        if ALU.Z:
+            # enable ld OPC
+            ALU.controller = "110110"
+            ALU.b_update(PC.data)
+
+            #     sys
+            CU.ui.pc_out_start()
+            CU.ui.opc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            OPC.load(ALU.out)
+            CU.GOTO()
+
+        else:
+            # ld pc enable to be incremented
+            ALU.controller = "110101"
+            ALU.b_update(PC.data)
+
+            # sys pause
+            CU.ui.pc_out_start()
+            CU.ui.pc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            PC.load(ALU.out)
+
+            # ld pc enable to be incremented
+            ALU.controller = "110101"
+            ALU.b_update(PC.data)
+
+            # sys pause
+            CU.ui.pc_out_start()
+            CU.ui.pc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            PC.load(ALU.out)
+
+    @staticmethod
+    def IFLT():
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
+        ALU.controller = "110110"
+        ALU.b_update(SP.data)
+
+        # sys
+        CU.ui.sp_out_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        # rd of memory is enabled
+        CU.rd()
+        #     enable ld of opc...tos is on bus
+
+        ALU.controller = "010100"
+        ALU.b_update(TOS.data)
+
+        # sys
+        CU.ui.tos_out_start()
+        CU.ui.opc_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        OPC.load(ALU.out)
+        #   enable ld of tos and MDR is on bus
+        ALU.controller = "010100"
+        ALU.b_update(MDR.data)
+
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        TOS.load(ALU.out)
+        #     opc is on bus to check if it is zero
+        ALU.controller = "010100"
+        ALU.b_update(OPC.data)
+
+        # sys
+        CU.ui.opc_out_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+
+        if ALU.N:
+            # enable ld OPC
+            ALU.controller = "110110"
+            ALU.b_update(PC.data)
+
+            # sys
+            CU.ui.pc_out_start()
+            CU.ui.opc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            OPC.load(ALU.out)
+            CU.GOTO()
+
+        else:
+            # ld pc enable to be incremented
+            ALU.controller = "110101"
+            ALU.b_update(PC.data)
+
+            # sys
+            CU.ui.pc_out_start()
+            CU.ui.pc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            PC.load(ALU.out)
+
+            # ld pc enable to be incremented
+            ALU.controller = "110101"
+            ALU.b_update(PC.data)
+
+            # sys
+            CU.ui.pc_out_start()
+            CU.ui.pc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            PC.load(ALU.out)
+
+    @staticmethod
+    def IF_ICMPEQ():
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
+        ALU.controller = "110110"
+        ALU.b_update(SP.data)
+
+        # sys
+        CU.ui.sp_out_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        # rd of memory is enabled
+        CU.rd()
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
+        ALU.controller = "110110"
+        ALU.b_update(SP.data)
+
+        # sys
+        CU.ui.sp_out_start()
+        CU.ui.sp__ld_start(ALU.out)
+        CU.ui.mar_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        #     mdr is on bus and ld of H is enabled and rd of memory is enabled
+        ALU.controller = "010100"
+        ALU.b_update(H.data)
+
+        # sys
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        H.load(ALU.out)
+        # rd of memory is enabled
+        CU.rd()
+        #     enable ld of opc...tos is on bus
+
+        ALU.controller = "010100"
+        ALU.b_update(TOS.data)
+
+        # sys
+        CU.ui.tos_out_start()
+        CU.ui.opc_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        OPC.load(ALU.out)
+        #   enable ld of tos and MDR is on bus
+        ALU.controller = "010100"
+        ALU.b_update(MDR.data)
+
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        TOS.load(ALU.out)
+        #     opc is on bus and alu is wants to have opc - H in the out
+        ALU.controller = "111111"
+        ALU.b_update(OPC.data)
+        ALU.a_update(H.data)
+
+        # sys
+        CU.ui.opc_out_start()
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        if ALU.Z:
+            # enable ld OPC
+            ALU.controller = "110110"
+            ALU.b_update(PC.data)
+
+            # sys
+            CU.ui.pc_out_start()
+            CU.ui.opc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            OPC.load(ALU.out)
+            CU.GOTO()
+
+        else:
+            # ld pc enable to be incremented
+            ALU.controller = "110101"
+            ALU.b_update(PC.data)
+
+            # sys
+            CU.ui.pc_out_start()
+            CU.ui.pc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            PC.load(ALU.out)
+
+            # ld pc enable to be incremented
+            ALU.controller = "110101"
+            ALU.b_update(PC.data)
+
+            # sys
+            CU.ui.pc_out_start()
+            CU.ui.pc_ld_start(ALU.out)
+            CU.flag = True
+            while CU.flag:
+                continue
+            #
+
+            PC.load(ALU.out)
+
+    @staticmethod
+    def IINC():
+        # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
+        CU.fetch()
+        #     enable ld of H and LV is on bus
+        ALU.controller = "010100"
+        ALU.b_update(LV.data)
+
+        # sys
+        CU.ui.lv_out_start()
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        H.load(ALU.out)
+        #     enable ld of MAR and MBRU is on bus
+        ALU.controller = "111100"
+        ALU.b_update(MBR.data)
+        ALU.a_update(H.data)
+
+        # sys
+        CU.ui.mbr_out1_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        CU.rd()
+        CU.fetch()
+        #     enable ld of H and MDR is on bus
+        ALU.controller = "010100"
+        ALU.b_update(MDR.data)
+
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        H.load(ALU.out)
+
+        #     enable ld of MDR and MBR is on bus
+        ALU.controller = "111100"
+        ALU.b_update(MBR.data)
+        ALU.a_update(H.data)
+
+        # sys
+        CU.ui.mbr_out1_start()
+        CU.ui.mdr_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MDR.load(ALU.out)
+        CU.wr()
+
+    @staticmethod
+    def ILOAD():
+        # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
+        CU.fetch()
+        #     enable ld of H and LV is on bus
+        ALU.controller = "010100"
+        ALU.b_update(LV.data)
+
+        # sys
+        CU.ui.lv_out_start()
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        H.load(ALU.out)
+        #     enable ld of MAR and MBRU is on bus
+        ALU.controller = "111100"
+        ALU.b_update(MBR.data)
+        ALU.a_update(H.data)
+
+        # sys
+        CU.ui.mbr_out1_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MAR.load(ALU.out)
+        # ed of memory
+        CU.rd()
+
+        # ld of sp and MAR should be enabled and sp is on alu bus
         ALU.controller = "110101"
-        ALU.b_update(PC.data)
+        ALU.b_update(SP.data)
 
-        # sys pause
-        PC.load(ALU.out)
+        # sys
+        CU.ui.sp_out_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-        # ld pc enable to be incremented
-        ALU.controller = "110101"
-        ALU.b_update(PC.data)
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        #     wr of memory
+        CU.wr()
+        #     enable ld of TOS and MDR is on bus
+        ALU.controller = "010100"
+        ALU.b_update(MDR.data)
 
-        # sys pause
-        PC.load(ALU.out)
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
+        TOS.load(ALU.out)
 
+    @staticmethod
+    def ISTORE():
+        # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
+        CU.fetch()
+        #     enable ld of H and LV is on bus
+        ALU.controller = "010100"
+        ALU.b_update(LV.data)
 
-def IINC():
+        # sys
+        CU.ui.lv_out_start()
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
+        H.load(ALU.out)
+        #     enable ld of MAR and MBRU is on bus
+        ALU.controller = "111100"
+        ALU.b_update(MBR.data)
+        ALU.a_update(H.data)
 
-    # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
-    fetch()
-#     enable ld of H and LV is on bus
-    ALU.controller = "010100"
-    ALU.b_update(LV.data)
-#     sys
-    H.load(ALU.out)
-#     enable ld of MAR and MBRU is on bus
-    ALU.controller = "111100"
-    ALU.b_update(MBR.data)
-    ALU.a_update(H.data)
-#     sys
-    MAR.load(ALU.out)
-    rd()
-    fetch()
-    #     enable ld of H and MDR is on bus
-    ALU.controller = "010100"
-    ALU.b_update(MDR.data)
-    #     sys
-    H.load(ALU.out)
+        # sys
+        CU.ui.mbr_out1_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-#     enable ld of MDR and MBR is on bus
-    ALU.controller = "111100"
-    ALU.b_update(MBR.data)
-    ALU.a_update(H.data)
-# sys
-    MDR.load(ALU.out)
-    wr()
+        MAR.load(ALU.out)
+        #     enable ld of MDR and Tos is on bus
+        ALU.controller = "010100"
+        ALU.b_update(TOS.data)
 
+        # sys
+        CU.ui.tos_out_start()
+        CU.ui.mdr_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
+        MDR.load(ALU.out)
+        CU.wr()
 
-def ILOAD(self):
-    # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
-    fetch()
-    #     enable ld of H and LV is on bus
-    ALU.controller = "010100"
-    ALU.b_update(LV.data)
-    #     sys
-    H.load(ALU.out)
-    #     enable ld of MAR and MBRU is on bus
-    ALU.controller = "111100"
-    ALU.b_update(MBR.data)
-    ALU.a_update(H.data)
-    #     sys
-    MAR.load(ALU.out)
-    # ed of memory
-    rd()
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
+        ALU.controller = "110110"
+        ALU.b_update(SP.data)
 
-    # ld of sp and MAR should be enabled and sp is on alu bus
-    ALU.controller = "110101"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-#     wr of memory
-    wr()
-#     enable ld of TOS and MDR is on bus
-    ALU.controller = "010100"
-    ALU.b_update(MDR.data)
-    #     sys
-    TOS.load(ALU.out)
+        # sys
+        CU.ui.sp_out_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        #     rd of memory
+        CU.rd()
 
-def ISTORE(self):
-    # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
-    fetch()
-    #     enable ld of H and LV is on bus
-    ALU.controller = "010100"
-    ALU.b_update(LV.data)
-    #     sys
-    H.load(ALU.out)
-    #     enable ld of MAR and MBRU is on bus
-    ALU.controller = "111100"
-    ALU.b_update(MBR.data)
-    ALU.a_update(H.data)
-    #     sys
-    MAR.load(ALU.out)
-    #     enable ld of MDR and Tos is on bus
-    ALU.controller = "010100"
-    ALU.b_update(TOS.data)
-    #     sys
-    MDR.load(ALU.out)
-    wr()
+        #     enable ld of TOS and MDR is on bus
+        ALU.controller = "010100"
+        ALU.b_update(MDR.data)
 
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-    #     rd of memory
-    rd()
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
+        TOS.load(ALU.out)
 
-    #     enable ld of TOS and MDR is on bus
-    ALU.controller = "010100"
-    ALU.b_update(MDR.data)
-    #     sys
-    TOS.load(ALU.out)
+    @staticmethod
+    def ISUB():
+        # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
+        ALU.controller = "110110"
+        ALU.b_update(SP.data)
 
+        # sys
+        CU.ui.sp_out_start()
+        CU.ui.mar_ld_start(ALU.out)
+        CU.ui.sp__ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-def ISUB():
-    # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
-    ALU.controller = "110110"
-    ALU.b_update(SP.data)
-    #     sys
-    MAR.load(ALU.out)
-    SP.load(ALU.out)
-#     rd of memory
-    rd()
+        MAR.load(ALU.out)
+        SP.load(ALU.out)
+        #     rd of memory
+        CU.rd()
 
-    #     enable ld of H ,tos is on bus
-    ALU.controller = "010100"
-    ALU.b_update(TOS.data)
-    #   sys
+        #     enable ld of H ,tos is on bus
+        ALU.controller = "010100"
+        ALU.b_update(TOS.data)
 
-    H.load(ALU.out)
-    # enable ld of tos and MDR
-    ALU.controller = "111111"
-    ALU.b_update(MDR.data)
-    ALU.a_update(H.data)
-    #   sys
-    MDR.load(ALU.out)
-    TOS.load(ALU.out)
-    wr()
+        # sys
+        CU.ui.tos_out_start()
+        CU.ui.h_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
 
-def NOPE():
-    pass
+        H.load(ALU.out)
+        # enable ld of tos and MDR
+        ALU.controller = "111111"
+        ALU.b_update(MDR.data)
+        ALU.a_update(H.data)
+
+        # sys
+        CU.ui.mdr_out_start()
+        CU.ui.mdr_ld_start(ALU.out)
+        CU.ui.tos_ld_start(ALU.out)
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+
+        MDR.load(ALU.out)
+        TOS.load(ALU.out)
+        CU.wr()
+
+    @staticmethod
+    def NOPE():
+        pass

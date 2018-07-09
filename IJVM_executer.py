@@ -8,6 +8,7 @@ from datapath.CPP import CPP
 from datapath.PC import PC
 from datapath.LV import LV
 from datapath.SP import SP
+from CU.CUdesign import CU
 
 
 def memory_initialization():
@@ -44,6 +45,7 @@ if __name__ == '__main__':
     memory_initialization()
     app = QApplication(sys.argv)
     ex = App()
+    CU.ui = ex
 
     # as an example:
     threading.Thread(target=ex.abc).start()

@@ -7,12 +7,6 @@ iadd
 isub
 .end_text
 .consts
-iek: 1
-do: 2
-se: 3
 .end_consts
 .vars
-char: 4
-panj: 5
-shish: 6
 .end_vars

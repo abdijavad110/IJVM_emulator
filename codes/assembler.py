@@ -15,7 +15,7 @@ def assemble():
     local_vars_string = ""
     const_table = []
     vars_table = []
-    # todo labels = {}
+    labels = {}
     if asm_opened:
         raw_asm = open(asm_path, "r").read().split("\n")
     else:
@@ -58,6 +58,8 @@ def assemble():
         opcode = instruction.split()[0]
         if instruction.startswith("#"):
             continue
+        if instruction.endswith(":"):
+            labels.update({instruction, text_seg.index(instruction)})
         if opcode not in list(instruction_dic.keys()):
             undefined_instruction(opcode, text_seg.index(instruction) + text_index)
         hex_opcode = instruction_dic[opcode]
@@ -76,17 +78,17 @@ def assemble():
                     instructions_string += hex(int(operand))[2:]
                     instructions_string += "\n"
             elif hex_opcode == instruction_dic["goto"]:
-                # todo: it should support labels
-                pass
+                instructions_string += hex(labels[operand] - text_seg.index(instruction))[2:]
+                instructions_string += "\n"
             elif hex_opcode == instruction_dic["ifeq"]:
-                # todo: it should support labels
-                pass
+                instructions_string += hex(labels[operand] - text_seg.index(instruction))[2:]
+                instructions_string += "\n"
             elif hex_opcode == instruction_dic["iflt"]:
-                # todo: it should support labels
-                pass
+                instructions_string += hex(labels[operand] - text_seg.index(instruction))[2:]
+                instructions_string += "\n"
             elif hex_opcode == instruction_dic["if_icmpeq"]:
-                # todo: it should support labels
-                pass
+                instructions_string += hex(labels[operand] - text_seg.index(instruction))[2:]
+                instructions_string += "\n"
             elif hex_opcode == instruction_dic["iinc"]:
                 instructions_string += hex(vars_table.index(operand))
                 instructions_string += "\n"
