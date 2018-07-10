@@ -1,3 +1,5 @@
+import threading
+
 from codes.assembler import assemble
 from Memory import Memory
 from datapath.PC import PC
@@ -47,6 +49,7 @@ def assemble_btn_clicked():
     assemble()
     memory_initialization()
     print(Memory.data)
+    threading.Thread(target=CU.clocked).start()
 
 
 def run_btn_clicked():

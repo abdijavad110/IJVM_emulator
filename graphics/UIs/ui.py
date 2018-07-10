@@ -5,6 +5,7 @@ from graphics.UIs.buttons_action import *
 class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
+        self.code_row_counter = 0
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(679, 730)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
@@ -568,7 +569,7 @@ class Ui_MainWindow(object):
         self.stack_table.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.stack_table.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.stack_table.setRowCount(0)
-        self.stack_table.setColumnCount(2)
+        self.stack_table.setColumnCount(1)
         self.stack_table.setObjectName("stack_table")
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignCenter)
@@ -576,8 +577,8 @@ class Ui_MainWindow(object):
         item = QtWidgets.QTableWidgetItem()
         item.setTextAlignment(QtCore.Qt.AlignCenter)
         self.stack_table.setHorizontalHeaderItem(1, item)
-        self.stack_table.horizontalHeader().setDefaultSectionSize(80)
-        self.stack_table.horizontalHeader().setMinimumSectionSize(80)
+        self.stack_table.horizontalHeader().setDefaultSectionSize(180)
+        self.stack_table.horizontalHeader().setMinimumSectionSize(180)
         self.stack_table.verticalHeader().setVisible(False)
         self.stack_table.verticalHeader().setDefaultSectionSize(35)
         self.stack_table.verticalHeader().setMinimumSectionSize(35)
@@ -734,8 +735,6 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "value"))
         self.label_6.setText(_translate("MainWindow", "stack"))
         item = self.stack_table.horizontalHeaderItem(0)
-        item.setText(_translate("MainWindow", "label"))
-        item = self.stack_table.horizontalHeaderItem(1)
         item.setText(_translate("MainWindow", "value"))
         item = self.const_table.horizontalHeaderItem(0)
         item.setText(_translate("MainWindow", "label"))
@@ -764,6 +763,15 @@ class Ui_MainWindow(object):
         self.H_ld.setText(_translate("MainWindow", "<html><head/><body><p><img src=\"graphics/datapath design/arrow_green.png\"/></p></body></html>"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.execute_tab), _translate("MainWindow", "execute"))
 
+    def stack_add(self, value):
+        row_position = self.stack_table.rowCount()
+        self.stack_table.insertRow(row_position)
+        self.stack_table.setItem(row_position, 0, QtWidgets.QTableWidgetItem(hex(value)))
+
+    def stack_pop(self):
+        row_position = self.stack_table.rowCount()
+        self.stack_table.removeRow(row_position-1)
+
     def define_buttons_actions(self):
         self.new_btn.clicked.connect(new_btn_clicked)
         self.open_btn.clicked.connect(self.open_btn_clicked)
@@ -771,9 +779,18 @@ class Ui_MainWindow(object):
         self.save_as_btn.clicked.connect(save_as_btn_clicked)
         self.assemble_btn.clicked.connect(self.assemble_btn_clicked)
         self.run_btn.clicked.connect(run_btn_clicked)
-        self.step_fwd_btn.clicked.connect(step_fwd_btn_clicked)
+        self.step_fwd_btn.clicked.connect(self.step_fwd_btn_clicked)
         self.clear_btn.clicked.connect(self.clear_btn_clicked)
         # todo baraie slide bar ham baiad ezafe she
+
+    def step_fwd_btn_clicked(self):
+        if CU.T == 1:
+            self.code_table.selectRow(self.code_row_counter)
+            self.code_row_counter += 1
+        self.sc_value.setText(str(CU.T))
+    #    threading.Thread(target=CU.clocked).start()
+    #    CU.flag = False
+        step_fwd_btn_clicked()
 
     def clear_btn_clicked(self):
         self.messages_viewer.clear()
@@ -813,10 +830,10 @@ class Ui_MainWindow(object):
         self.messages_viewer.setText(self.messages_viewer.toPlainText()+"\n\n" + "assembled successfully")
         assemble_btn_clicked()
 
-    def mar_ld_start(self, value):
+    def mar_ld_start(self):
         self.mar_ld.show()
 
-    def mdr_ld_start(self, value):
+    def mdr_ld_start(self):
         self.mdr_ld.show()
 
     def mar_ld_update(self, value):
@@ -828,7 +845,7 @@ class Ui_MainWindow(object):
     def mdr_out_start(self):
         self.mdr_out.show()
 
-    def pc_ld_start(self, value):
+    def pc_ld_start(self,):
         self.pc_ld.show()
 
     def pc_ld_update(self, value):
@@ -837,7 +854,7 @@ class Ui_MainWindow(object):
     def pc_out_start(self):
         self.pc_out.show()
 
-    def mbr_ld_start(self, value):
+    def mbr_ld_start(self):
         self.mbr_ld.show()
 
     def mbr_ld_update(self, value):
@@ -849,7 +866,7 @@ class Ui_MainWindow(object):
     def mbr_out2_start(self):
         self.mbr_out2.show()
 
-    def sp__ld_start(self, value):
+    def sp__ld_start(self):
         self.sp_ld.show()
 
     def sp__ld_update(self, value):
@@ -858,7 +875,7 @@ class Ui_MainWindow(object):
     def sp_out_start(self):
         self.sp_out.show()
 
-    def cpp_ld_start(self, value):
+    def cpp_ld_start(self):
         self.cpp_ld.show()
 
     def cpp_ld_update(self, value):
@@ -867,7 +884,7 @@ class Ui_MainWindow(object):
     def cpp_out_start(self):
         self.cpp_out.show()
 
-    def lv_ld_start(self, value):
+    def lv_ld_start(self):
         self.lv_ld.show()
 
     def lv_ld_update(self, value):
@@ -876,7 +893,7 @@ class Ui_MainWindow(object):
     def lv_out_start(self):
         self.lv_out.show()
 
-    def tos_ld_start(self, value):
+    def tos_ld_start(self):
         self.tos_ld.show()
 
     def tos_ld_update(self, value):
@@ -885,7 +902,7 @@ class Ui_MainWindow(object):
     def tos_out_start(self):
         self.tos_out.show()
 
-    def opc_ld_start(self, value):
+    def opc_ld_start(self):
         self.opc_ld.show()
 
     def opc_ld_update(self, value):
@@ -894,7 +911,7 @@ class Ui_MainWindow(object):
     def opc_out_start(self):
         self.opc_out.show()
 
-    def h_ld_start(self, value):
+    def h_ld_start(self):
         self.H_ld.show()
 
     def h_ld_update(self, value):

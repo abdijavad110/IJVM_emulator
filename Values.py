@@ -28,10 +28,10 @@ instruction_operands = {"bipush": 1,
                         "nop": 0}
 
 # memory:
-memory_size = 2 ** 16
+memory_size = 2 ** 10
 
 # registers default value
 PC_default = 0
-SP_default = 0
-LV_default = 0
-CPP_default = 0
+SP_default = 3 * (2 ** 8)
+LV_default = 2 ** 9
+CPP_default = 2 ** 8

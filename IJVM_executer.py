@@ -36,7 +36,8 @@ class App(QMainWindow):
     # as an example:
     def abc(self):
         time.sleep(2)
-        ex.ui.mar_ld_start(100)
+        ex.ui.mar_ld_update(100)
+        ex.ui.mar_ld_start()
         time.sleep(2)
         ex.ui.signals_stop()
 
@@ -45,7 +46,7 @@ if __name__ == '__main__':
     memory_initialization()
     app = QApplication(sys.argv)
     ex = App()
-    CU.ui = ex
+    CU.ui = ex.ui
 
     # as an example:
     threading.Thread(target=ex.abc).start()

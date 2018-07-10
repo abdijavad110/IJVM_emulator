@@ -1,3 +1,5 @@
+import time
+
 from Memory import Memory
 from datapath.ALU import ALU
 from datapath.H import H
@@ -9,35 +11,62 @@ from datapath.PC import PC
 from datapath.MBR import MBR
 from datapath.SP import SP
 from datapath.TOS import TOS
-from graphics.UIs.ui import Ui_MainWindow
+import threading
+
+
+# from graphics.UIs.ui import Ui_MainWindow
 
 
 class CU:
     T = 0
-    ui = Ui_MainWindow()
+    ui = None
     flag = False
+    curter = threading.Thread
 
     @staticmethod
     def clocked():
-        if CU.T == 0:
+        while True:
+            print("clocked,   flag: " + str(CU.flag) + "    T: " + str(CU.T))
+            CU.flag = True
+            while CU.flag:
+                continue
             CU.fetch()
-        else:
-            N = {0x10: CU.bipush(),
-                 0xA7: CU.GOTO(),
-                 0x60: CU.LADD(),
-                 0x99: CU.IFEQ(),
-                 0x9B: CU.IFLT(),
-                 0x9F: CU.IF_ICMPEQ(),
-                 0x84: CU.IINC(),
-                 0x15: CU.ILOAD(),
-                 0x36: CU.ISTORE(),
-                 0x64: CU.ISUB(),
-                 0x00: CU.NOPE(),
-                 }[MBR.data]
+            if CU.T == 0:
+                CU.fetch()
+            elif CU.T == 1:
+                print(hex(MBR.data)[-2:])
+                if hex(MBR.data)[-2:] == "10":
+                    CU.bipush()
+                elif hex(MBR.data)[-2:] == "a7":
+                    CU.GOTO()
+                elif hex(MBR.data)[-2:] == "60":
+                    CU.LADD()
+                elif hex(MBR.data)[-2:] == "99":
+                    CU.IFEQ()
+                elif hex(MBR.data)[-2:] == "9b":
+                    CU.IFLT()
+                elif hex(MBR.data)[-2:] == "9f":
+                    CU.IF_ICMPEQ()
+                elif hex(MBR.data)[-2:] == "84":
+                    CU.IINC()
+                elif hex(MBR.data)[-2:] == "15":
+                    CU.ILOAD()
+                elif hex(MBR.data)[-2:] == "36":
+                    CU.ISTORE()
+                elif hex(MBR.data)[-2:] == "64":
+                    CU.ISUB()
+                elif hex(MBR.data)[-2:] == "00":
+                    CU.NOPE()
+                elif hex(MBR.data)[-2:] == "0":
+                    CU.NOPE()
+                else:
+                    print("undefined opcode")
 
     @staticmethod
     def fetch():
-
+        if CU.T == 0:
+            CU.T += 1
+        print("fetching")
         ALU.controller = "110101"
         ALU.b_update(PC.data)
 
@@ -47,28 +76,32 @@ class CU:
         CU.ui.pc_ld_start()
         CU.flag = True
         while CU.flag:
-            continue
+            time.sleep(1)
         #
         CU.ui.mbr_ld_update(Memory.read(PC.data))
         CU.ui.pc_ld_update(ALU.out)
 
         MBR.load(Memory.read(PC.data))
         PC.load(ALU.out)
-        CU.T += 1
 
     @staticmethod
     def rd():
+        print("reading")
         #
-        CU.ui.mdr_ld_start(Memory.read(MAR.data))
+        CU.ui.mdr_ld_start()
+        CU.ui.mdr_ld_update(Memory.read(MAR.data))
         #
         MDR.load(Memory.read(MAR.data))
 
     @staticmethod
     def wr():
+        print("writing")
         Memory.word_write(MDR.data, MAR.data)
 
     @staticmethod
     def bipush():
+        print("bipush")
+        CU.T += 1
         # sp on bus to alu and enable sp ld
 
         ALU.controller = "110101"
@@ -103,12 +136,16 @@ class CU:
         #
         CU.ui.mdr_ld_update(ALU.out)
         CU.ui.tos_ld_update(ALU.out)
-        MDR.load(ALU.out)
-        TOS.load(ALU.out)
+        MDR.load(ALU.out % 256)
+        TOS.load(ALU.out % 256)
         CU.wr()
+        CU.ui.stack_add(ALU.out % 256)
+        CU.T = 0
 
     @staticmethod
     def GOTO():
+        print("goto")
+        CU.T += 1
         # ld of opc should be enabled and pc is on alu bus
         ALU.controller = "110110"
         ALU.b_update(PC.data)
@@ -169,9 +206,12 @@ class CU:
         #
         CU.ui.pc_ld_update(ALU.out)
         PC.load(ALU.out)
+        CU.T = 0
 
     @staticmethod
     def LADD():
+        print("iadd")
+        CU.T += 1
         # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
         ALU.controller = "110110"
         ALU.b_update(SP.data)
@@ -185,7 +225,7 @@ class CU:
         while CU.flag:
             continue
         #
-        CU.ui.mar_out_update(ALU.out)
+        CU.ui.mar_ld_update(ALU.out)
         CU.ui.sp__ld_update(ALU.out)
 
         MAR.load(ALU.out)
@@ -221,9 +261,12 @@ class CU:
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
+        CU.T = 0
 
     @staticmethod
     def IFEQ():
+        print("ifeq")
+        CU.T += 1
         # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
         ALU.controller = "110110"
         ALU.b_update(SP.data)
@@ -236,7 +279,7 @@ class CU:
             continue
         #
         CU.ui.mar_ld_update(ALU.out)
-        CU.ui.sp_ld_update(ALU.out)
+        CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
         SP.load(ALU.out)
         # rd of memory is enabled
@@ -331,9 +374,12 @@ class CU:
             CU.ui.pc_ld_update(ALU.out)
 
             PC.load(ALU.out)
+            CU.T = 0
 
     @staticmethod
     def IFLT():
+        print("iflt")
+        CU.T += 1
         # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
         ALU.controller = "110110"
         ALU.b_update(SP.data)
@@ -394,7 +440,6 @@ class CU:
             continue
         #
 
-
         if ALU.N:
             # enable ld OPC
             ALU.controller = "110110"
@@ -442,9 +487,12 @@ class CU:
             #
             CU.ui.pc_ld_update(ALU.out)
             PC.load(ALU.out)
+            CU.T = 0
 
     @staticmethod
     def IF_ICMPEQ():
+        print("if_icmpeq")
+        CU.T += 1
         # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
         ALU.controller = "110110"
         ALU.b_update(SP.data)
@@ -535,7 +583,6 @@ class CU:
         # sys
         CU.ui.signals_stop()
         CU.ui.opc_out_start()
-        CU.ui.h_out_start()
         CU.flag = True
         while CU.flag:
             continue
@@ -590,9 +637,12 @@ class CU:
             CU.ui.pc_ld_update(ALU.out)
 
             PC.load(ALU.out)
+            CU.T = 0
 
     @staticmethod
     def IINC():
+        print("iinc")
+        CU.T += 1
         # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
         CU.fetch()
         #     enable ld of H and LV is on bus
@@ -656,9 +706,12 @@ class CU:
         CU.ui.mdr_ld_update(ALU.out)
         MDR.load(ALU.out)
         CU.wr()
+        CU.T = 0
 
     @staticmethod
     def ILOAD():
+        print("iload")
+        CU.T += 1
         # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
         CU.fetch()
         #     enable ld of H and LV is on bus
@@ -726,9 +779,12 @@ class CU:
         #
         CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
+        CU.T = 0
 
     @staticmethod
     def ISTORE():
+        print("istore")
+        CU.T += 1
         # در نظر گرفته که ابتدا varnumبیاد بعد const...هر دو رو هم یک بایتی در نظر گرفته
         CU.fetch()
         #     enable ld of H and LV is on bus
@@ -810,9 +866,12 @@ class CU:
         #
         CU.ui.tos_ld_update(ALU.out)
         TOS.load(ALU.out)
+        CU.T = 0
 
     @staticmethod
     def ISUB():
+        print("isub")
+        CU.T += 1
         # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
         ALU.controller = "110110"
         ALU.b_update(SP.data)
@@ -866,7 +925,15 @@ class CU:
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
+        CU.T = 0
 
     @staticmethod
     def NOPE():
-        pass
+        print("nop")
+        CU.T += 1
+        # sys
+        CU.flag = True
+        while CU.flag:
+            continue
+        #
+        CU.T = 0
