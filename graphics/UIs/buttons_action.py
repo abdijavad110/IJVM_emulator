@@ -19,7 +19,7 @@ def memory_initialization():
     Memory.data[PC.data:PC.data+len(instructions)] = instructions
     Memory.data[LV.data:LV.data+len(local_vars)] = local_vars
     Memory.data[CPP.data:CPP.data+len(constants)] = constants
-    SP.data = LV.data + len(local_vars)
+    SP.data += LV.data + len(local_vars)
 
 
 def new_btn_clicked():

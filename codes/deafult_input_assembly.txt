@@ -1,8 +1,7 @@
 .text
-bipush 10
+bipush 30
 bipush 20
 bipush 30
-bipush 40
 iadd
 isub
 .end_text

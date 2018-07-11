@@ -25,6 +25,7 @@ class ALU:
             "110001": 1,
             "110010": -1,
             "011111": ALU.B << 8
+
         }[ALU.controller]
         if ALU.out >= 4294967296:
             ALU.out = ALU.out & 4294967295

@@ -24,6 +24,10 @@ class Memory:
 
     @staticmethod
     def read(address):
-        address = (address//4)*4
-        return (Memory.data[address+3]*(2**24)) + (Memory.data[address+2]*(2**16)) + \
-               (Memory.data[address+1]*(2**8)) + (Memory.data[address])
+        # address = (address // 4) * 4
+        return (Memory.data[address + 3] * (2 ** 24)) + (Memory.data[address + 2] * (2 ** 16)) + \
+               (Memory.data[address + 1] * (2 ** 8)) + (Memory.data[address])
+
+    @staticmethod
+    def read_byte(address):
+        return Memory.data[address]

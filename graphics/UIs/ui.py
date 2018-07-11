@@ -764,13 +764,12 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.execute_tab), _translate("MainWindow", "execute"))
 
     def stack_add(self, value):
-        row_position = self.stack_table.rowCount()
-        self.stack_table.insertRow(row_position)
-        self.stack_table.setItem(row_position, 0, QtWidgets.QTableWidgetItem(hex(value)))
+        self.stack_table.insertRow(0)
+        self.stack_table.setItem(0, 0,QtWidgets.QTableWidgetItem(str(value)))
 
     def stack_pop(self):
-        row_position = self.stack_table.rowCount()
-        self.stack_table.removeRow(row_position-1)
+        # row_position = self.stack_table.rowCount()
+        self.stack_table.removeRow(0)
 
     def define_buttons_actions(self):
         self.new_btn.clicked.connect(new_btn_clicked)
@@ -870,7 +869,7 @@ class Ui_MainWindow(object):
         self.sp_ld.show()
 
     def sp__ld_update(self, value):
-        self.sp_value.setText("0x" + ("0"*(8 - len(hex(value)[2:]))) + hex(value)[2:])
+        self.sp_value.setText("0x"+format(value, '08x'))
 
     def sp_out_start(self):
         self.sp_out.show()

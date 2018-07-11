@@ -40,7 +40,7 @@ class CU:
                 elif hex(MBR.data)[-2:] == "a7":
                     CU.GOTO()
                 elif hex(MBR.data)[-2:] == "60":
-                    CU.LADD()
+                    CU.IADD()
                 elif hex(MBR.data)[-2:] == "99":
                     CU.IFEQ()
                 elif hex(MBR.data)[-2:] == "9b":
@@ -78,10 +78,10 @@ class CU:
         while CU.flag:
             time.sleep(1)
         #
-        CU.ui.mbr_ld_update(Memory.read(PC.data))
+        CU.ui.mbr_ld_update(Memory.read_byte(PC.data))
         CU.ui.pc_ld_update(ALU.out)
 
-        MBR.load(Memory.read(PC.data))
+        MBR.load(Memory.read_byte(PC.data))
         PC.load(ALU.out)
 
     @staticmethod
@@ -89,21 +89,21 @@ class CU:
         print("reading")
         #
         CU.ui.mdr_ld_start()
-        CU.ui.mdr_ld_update(Memory.read(MAR.data))
+        CU.ui.mdr_ld_update(Memory.read_byte(MAR.data))
         #
-        MDR.load(Memory.read(MAR.data))
+        MDR.load(Memory.read_byte(MAR.data))
 
     @staticmethod
     def wr():
         print("writing")
-        Memory.word_write(MDR.data, MAR.data)
+        Memory.byte_write(MDR.data, MAR.data)
 
     @staticmethod
     def bipush():
         print("bipush")
         CU.T += 1
         # sp on bus to alu and enable sp ld
-
+        print(SP.data)
         ALU.controller = "110101"
         ALU.b_update(SP.data)
 
@@ -120,6 +120,8 @@ class CU:
         CU.ui.mar_ld_update(ALU.out)
         SP.load(ALU.out)
         MAR.load(ALU.out)
+        print(SP.data)
+
         CU.fetch()
         # sys
         # b should be out of alu
@@ -209,7 +211,7 @@ class CU:
         CU.T = 0
 
     @staticmethod
-    def LADD():
+    def IADD():
         print("iadd")
         CU.T += 1
         # ld of sp and MAR should be enabled and sp is on alu bus AND  rd of memory
@@ -221,15 +223,18 @@ class CU:
         CU.ui.mar_ld_start()
         CU.ui.sp__ld_start()
         CU.ui.sp_out_start()
+
         CU.flag = True
         while CU.flag:
             continue
         #
+        CU.ui.stack_pop()
+        CU.ui.stack_pop()
         CU.ui.mar_ld_update(ALU.out)
         CU.ui.sp__ld_update(ALU.out)
-
         MAR.load(ALU.out)
         SP.load(ALU.out)
+        CU.rd()
         #     enable ld of H ,tos is on bus
         ALU.controller = "010100"
         ALU.b_update(TOS.data)
@@ -261,6 +266,8 @@ class CU:
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
+        CU.ui.stack_add(ALU.out)
+
         CU.T = 0
 
     @staticmethod
@@ -885,6 +892,8 @@ class CU:
         while CU.flag:
             continue
         #
+        CU.ui.stack_pop()
+        CU.ui.stack_pop()
         CU.ui.mar_ld_update(ALU.out)
         CU.ui.sp__ld_update(ALU.out)
         MAR.load(ALU.out)
@@ -925,6 +934,7 @@ class CU:
         MDR.load(ALU.out)
         TOS.load(ALU.out)
         CU.wr()
+        CU.ui.stack_add(ALU.out)
         CU.T = 0
 
     @staticmethod
