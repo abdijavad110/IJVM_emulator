@@ -1,11 +1,11 @@
-.text
-bipush 30
-bipush 20
-bipush 30
-iadd
-isub
-.end_text
 .consts
+
 .end_consts
+
+.text
+BIPUSH 10
+.end_text
+
 .vars
+
 .end_vars
